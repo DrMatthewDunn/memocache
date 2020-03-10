@@ -10,9 +10,9 @@ keycache = ExpiringDict(max_len=1000,max_age_seconds=3600)
 
 
 @cached(ttl=59)  #set TTL to suit
-def memcacheget(memkey):
-    item = memcache.get(memkey)
-    return item
+def memcacheget(key):
+    value = memcache.get(key)
+    return value
 
 
 #memoized objects - if not then memcache
@@ -28,38 +28,38 @@ class memocache():
         pass
 
     @classmethod
-    def get(cls,memkey):
+    def get(cls,key):
         '''
         Retrieve from cache; memo first, then memcache, else None.
         '''
-        learned = keycache.get(memkey,None)
+        learned = keycache.get(key,None)
         if learned: #key already in memcache so it'll actually retrieve from memo
-            item = memcacheget(memkey)
-            return item
+            value = memcacheget(key)
+            return value
         else:  #key not learned or forgotten
-            item = memcache.get(memkey)
-            if item:  #in memcache but key unlearned or forgotten
-                keycache[memkey] = int((datetime.utcnow() - datetime(1970, 1, 1)).total_seconds()) #save key with utc timestamp as value just in case
-                return item
+            value = memcache.get(key)
+            if value:  #in memcache but key unlearned or forgotten
+                keycache[key] = int((datetime.utcnow() - datetime(1970, 1, 1)).total_seconds()) #save key with utc timestamp as value just in case
+                return value
             else:
                 return None
 
     @classmethod
-    def add(cls,memkey,item,time=None):
+    def add(cls,key=None,value=None,time=None):
         '''
-        Add item to cache, add key to keycache
+        Add value to cache, add key to keycache
         '''
-        keycache[memkey] = int((datetime.utcnow() - datetime(1970, 1, 1)).total_seconds()) #add key to dictionary of memo'd keys
+        keycache[key] = int((datetime.utcnow() - datetime(1970, 1, 1)).total_seconds()) #add key to dictionary of memo'd keys
         if time:
-            memcache.add(memkey,item,time=time)
+            memcache.add(key,value,time=time)
         else:
-            memcache.add(memkey,item) #DS record permanent; memo cache still only 59 seconds
+            memcache.add(key,value) #DS record permanent; memo cache still only 59 seconds
         return
 
     @classmethod
-    def delete(cls,memkey):
+    def delete(cls,key):
         '''
-        Remove key from keycache, item from memcache
+        Remove key from keycache, value from memcache
         '''
-        keycache.pop(memkey)
-        memcache.delete(memkey)
+        keycache.pop(key)
+        memcache.delete(key)
