@@ -2,8 +2,11 @@
 Python - memoize layer for memcaching.
 
 A simple memoize library to improve speed and reduce memcache hits.
+
 use:
+
 #from google.appengine.api import memcache
+
 from memocache import memocache as memcache
 
 This library was initially developed for use within Google AppEngine.
